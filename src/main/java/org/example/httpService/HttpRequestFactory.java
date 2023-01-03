@@ -16,6 +16,10 @@ public class HttpRequestFactory {
         return getRequest(Endpoints.MAIN_PAGE.getUrl());
     }
 
+    public HttpRequest getGoodsPageReq() {
+        return getRequest(Endpoints.GOODS_PAGE.getUrl());
+    }
+
     private HttpRequest.Builder getDefaultBuilder(String uri) {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(uri))
