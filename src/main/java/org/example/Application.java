@@ -1,26 +1,25 @@
 package org.example;
 
 import org.example.dataCache.IDataCache;
-import org.example.dataCache.ProductsCache;
 import org.example.dataCache.UserAgentsCache;
 import org.example.httpService.HttpRequestFactory;
 import org.example.httpService.HttpService;
 import org.example.model.Product;
+import org.example.utils.HttpUtils;
 
+import java.net.http.HttpResponse;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Application {
-    private final AtomicInteger orderId = new AtomicInteger(0);
-
     private Map<String, String> defaultHeaders = Collections.emptyMap();
     private IDataCache<String> userAgentsCache;
     private IDataCache<Product> productsCache;
-
     private HttpService httpService;
+
+    private String token;
     public CompletableFuture<Void> run() {
         return CompletableFuture.runAsync(() -> {
             if (defaultHeaders.isEmpty()) {
@@ -31,17 +30,20 @@ public class Application {
             }
         }).thenRun(() -> {
             if (productsCache == null) {
-                ProductsCache prodCache = new ProductsCache(httpService);
-                productsCache = prodCache.init();
+                String json = httpService.extractToken();
+                String ippKey = HttpUtils.getValueByKeyFromJson(json, "ippKey");
+                String ippUid = HttpUtils.getValueByKeyFromJson(json, "ippUid");
+                String ippSign = HttpUtils.getValueByKeyFromJson(json, "ippSign");
+                httpService.setCookies(ippKey, ippUid, ippSign, "locale=ru", "city_id=1");
+                HttpResponse goodsPage = httpService.getGoodsPage();
+                System.out.println(goodsPage.body().toString());
             }
         });
     }
-
     private void loadDefaultHeaders() {
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
         headers.put("User-Agent", userAgentsCache.getRandomValue());
-        headers.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
         this.defaultHeaders = headers;
     }
 }

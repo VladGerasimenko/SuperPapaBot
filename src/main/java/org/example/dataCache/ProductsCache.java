@@ -17,7 +17,7 @@ public class ProductsCache implements IDataCache<Product> {
     }
     @Override
     public IDataCache<Product> init() {
-        HttpResponse mainPage = httpService.getMainPage();
+        HttpResponse goodsPage = httpService.getGoodsPage();
         return null;
     }
 
